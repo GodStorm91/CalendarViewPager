@@ -3,11 +3,12 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import db from '../database/init.js';
 import { authenticateToken } from '../middleware/auth.js';
+import { verifyCaptcha } from '../middleware/captcha.js';
 
 const router = express.Router();
 
 // Register
-router.post('/register', async (req, res) => {
+router.post('/register', verifyCaptcha, async (req, res) => {
   try {
     const { email, password } = req.body;
 
@@ -44,7 +45,7 @@ router.post('/register', async (req, res) => {
 });
 
 // Login
-router.post('/login', async (req, res) => {
+router.post('/login', verifyCaptcha, async (req, res) => {
   try {
     const { email, password } = req.body;
 

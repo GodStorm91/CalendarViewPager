@@ -2,10 +2,12 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Activity } from 'lucide-react';
+import ReCaptcha, { resetRecaptcha } from '../components/ReCaptcha';
 
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [captchaToken, setCaptchaToken] = useState(null);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -14,16 +16,35 @@ export default function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+
+    // Check CAPTCHA (if configured)
+    const siteKey = import.meta.env.VITE_RECAPTCHA_SITE_KEY;
+    if (siteKey && !captchaToken) {
+      setError('Please complete the CAPTCHA verification');
+      return;
+    }
+
     setLoading(true);
 
     try {
-      await login(email, password);
+      await login(email, password, captchaToken);
       navigate('/dashboard');
     } catch (err) {
       setError(err.response?.data?.error || 'Failed to login');
+      // Reset CAPTCHA on error
+      resetRecaptcha();
+      setCaptchaToken(null);
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleCaptchaVerify = (token) => {
+    setCaptchaToken(token);
+  };
+
+  const handleCaptchaExpire = () => {
+    setCaptchaToken(null);
   };
 
   return (
@@ -70,6 +91,11 @@ export default function Login() {
               required
             />
           </div>
+
+          <ReCaptcha
+            onVerify={handleCaptchaVerify}
+            onExpire={handleCaptchaExpire}
+          />
 
           <button
             type="submit"

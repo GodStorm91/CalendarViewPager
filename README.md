@@ -12,6 +12,8 @@ A personal web application that syncs your Garmin Connect training plans with Go
 - **Interactive Dashboard**: View all your training plans in a calendar interface
 - **Sync History**: Track all synchronization activities
 - **Automatic Mapping**: Maintains sync mappings between Garmin workouts and Google Calendar events
+- **Multi-User Support**: Each user has their own isolated data and connections
+- **Bot Protection**: Google reCAPTCHA v2 integration for login and registration
 
 ## Tech Stack
 
@@ -53,7 +55,23 @@ A personal web application that syncs your Garmin Connect training plans with Go
    - Add authorized redirect URI: `http://localhost:3001/api/google/callback`
    - Save the Client ID and Client Secret
 
-### 2. Backend Setup
+### 2. Google reCAPTCHA Setup (Bot Protection)
+
+1. Go to [Google reCAPTCHA Admin](https://www.google.com/recaptcha/admin)
+2. Click "+" to create a new site
+3. Fill in the form:
+   - **Label**: Garmin Calendar Sync (or any name you prefer)
+   - **reCAPTCHA type**: Choose "reCAPTCHA v2" → "I'm not a robot" Checkbox
+   - **Domains**: Add `localhost` for development
+4. Accept the reCAPTCHA Terms of Service
+5. Click "Submit"
+6. Save both keys:
+   - **Site Key**: Used in the frontend (.env file)
+   - **Secret Key**: Used in the backend (.env file)
+
+**Note**: reCAPTCHA is optional. If not configured, the app will work without CAPTCHA verification (useful for development).
+
+### 3. Backend Setup
 
 ```bash
 cd backend
@@ -67,6 +85,7 @@ cp .env.example .env
 # Edit .env and add your credentials
 # - Set a strong JWT_SECRET
 # - Add your Google Client ID and Secret
+# - Add your reCAPTCHA Secret Key (optional)
 nano .env
 
 # Create data directory for SQLite database
@@ -78,13 +97,19 @@ npm run dev
 
 The backend will start on `http://localhost:3001`
 
-### 3. Frontend Setup
+### 4. Frontend Setup
 
 ```bash
 cd frontend
 
 # Install dependencies
 npm install
+
+# Create .env file from example (optional, for reCAPTCHA)
+cp .env.example .env
+
+# Edit .env and add your reCAPTCHA Site Key (optional)
+nano .env
 
 # Start the development server
 npm run dev
