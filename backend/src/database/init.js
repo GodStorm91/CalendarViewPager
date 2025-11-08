@@ -70,6 +70,23 @@ export function initDatabase() {
     )
   `);
 
+  // OTP (One-Time Password) for email verification
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS otps (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      email TEXT NOT NULL,
+      otp_code TEXT NOT NULL,
+      expires_at DATETIME NOT NULL,
+      verified BOOLEAN DEFAULT 0,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+
+  // Create index on email for faster OTP lookups
+  db.exec(`
+    CREATE INDEX IF NOT EXISTS idx_otps_email ON otps(email)
+  `);
+
   console.log('✅ Database initialized');
 }
 
